@@ -61,7 +61,7 @@ export default function Signin() {
         >
           Sign In
         </button>
-        <p className="text-sm text-center">New here? <NavLink to={'/signin'}>Login</NavLink></p>
+        <p className="text-sm text-center">New here? <NavLink to={'/signup'}>Login</NavLink></p>
         
       </form>
     </main>
