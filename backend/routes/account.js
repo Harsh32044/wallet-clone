@@ -70,4 +70,47 @@ accountRoute.post("/transfer", authMiddleware, async (req,res) => {
     }
 
 })
+
+// ! Add money to my account, using mongoose session
+
+accountRoute.put("/addmoney", authMiddleware ,async (req,res) => {
+    const userId = req.userId;
+    const amount = parseFloat(req.query.amount)
+
+    if (amount <= 0) {
+        return res.status(400).json({
+            error: "Invalid Amount"
+        })
+    }
+    const session = await mongoose.startSession()
+
+    let currAcnt;
+
+    try {
+        await session.withTransaction(async() => {
+            currAcnt = await Account.findOneAndUpdate(
+                {userId: userId},
+                { $inc: { balance: amount }},
+                {new: true, session}
+            )
+
+            if (!currAcnt) {
+                throw new Error("Account Not Found")
+            }
+        })
+
+        res.status(200).json({
+            message: "Amount added successfully",
+            balance: currAcnt.balance
+        })
+    }
+    catch (err) {
+        return res.status(400).json({
+            error: err.message
+        })
+    }
+    finally {
+        session.endSession()
+    }
+})
 module.exports = accountRoute
