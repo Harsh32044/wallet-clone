@@ -15,3 +15,7 @@ dl,
 dd {
  margin: 0;
 }
+
+body.modal-open #root {
+    filter: blur(4px);
+   }
