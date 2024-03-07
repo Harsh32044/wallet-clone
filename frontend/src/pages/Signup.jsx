@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Signup() {
 
@@ -10,6 +11,10 @@ export default function Signup() {
         password: ''
     })
 
+    const [submitSuccess, setSubmitSuccess] = useState(0)
+
+    const navigate = useNavigate()
+
     const handleChange = (event) => {
         const {name, value} = event.target
 
@@ -17,12 +22,19 @@ export default function Signup() {
             ...values,
             [name] : value
         })
-        console.log(values);
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault()
-        console.log(values)
+
+        const response = axios.post("http://localhost:3000/api/v1/users/signup" , values)
+        if (response.message != '') {
+          setSubmitSuccess(1)
+          navigate("/signin")
+        }
+        else {
+          setSubmitSuccess(2)
+        }
     }
   return (
     <main className="bg-blue-500 w-dvw h-dvh flex items-center justify-center">
@@ -31,6 +43,7 @@ export default function Signup() {
         <p className="text-md text-center text-gray-500 py-4">
           Enter your information to create an account.
         </p>
+        {submitSuccess == 2 && <p className="text-red-500 font-semibold">Incorrect Details or user already exists</p>}
         <label htmlFor="firstname" className="text-sm font-semibold">
           First Name
         </label>
