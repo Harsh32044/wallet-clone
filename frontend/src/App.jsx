@@ -3,12 +3,14 @@ import Signup from './pages/Signup'
 import Signin from './pages/Signin'
 import Dashboard from './pages/Dashboard'
 import SendMoney from './pages/SendMoney'
+import Homepage from './pages/Homepage'
 
 function App() {
 
   return (
     <BrowserRouter>
         <Routes>
+          <Route path='/' element={<Homepage/>}/>
           <Route path='/dashboard' element={<Dashboard/>}/>
           <Route path='/signup' element={<Signup/>}/>
           <Route path='/signin' element={<Signin/>}/>
