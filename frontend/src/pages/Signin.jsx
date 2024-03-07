@@ -1,5 +1,6 @@
+import axios from "axios";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Signin() {
   const [values, setValues] = useState({
@@ -7,9 +8,22 @@ export default function Signin() {
     password: ''
   });
 
-  const handleSubmit = (event) => {
+  const [submitSuccess, setSubmitSuccess] = useState(0)
+
+  const navigate = useNavigate()
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(values);
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/v1/users/signin", values)
+      localStorage.setItem("token", response.data.token)
+      setSubmitSuccess(1)
+      navigate("/dashboard")
+    }
+    catch (err) {
+      setSubmitSuccess(2)
+    }
   };
 
   const handleChange = (event) => {
@@ -18,7 +32,6 @@ export default function Signin() {
       [event.target.name]: event.target.value,
     });
 
-    console.log(values);
   };
   return (
     <main className="bg-blue-500 w-dvw h-dvh flex items-center justify-center">
@@ -27,7 +40,7 @@ export default function Signin() {
         <p className="text-md text-center text-gray-500 py-4">
           Enter your credentials to get started.
         </p>
-
+        {submitSuccess == 2 && <p className="text-red-500 font-semibold">Incorrect credentials.</p>}
         <label htmlFor="username" className="text-sm font-semibold">
           Email/Username
         </label>
@@ -39,8 +52,9 @@ export default function Signin() {
           placeholder="Enter your username here"
           value={values.username}
           onChange={handleChange}
+          onFocusCapture={() => setSubmitSuccess(0)}
           className="border-2 w-full rounded-md p-2 mb-4"
-        />
+          />
         <label htmlFor="password" className="text-sm font-semibold">
           Password
         </label>
@@ -52,6 +66,7 @@ export default function Signin() {
           placeholder="Enter your password here"
           value={values.password}
           onChange={handleChange}
+          onFocusCapture={() => setSubmitSuccess(0)}
           className="border-2 w-full rounded-md p-2 mb-4"
         />
 
@@ -61,7 +76,7 @@ export default function Signin() {
         >
           Sign In
         </button>
-        <p className="text-sm text-center">New here? <NavLink to={'/signup'}>Login</NavLink></p>
+        <p className="text-sm text-center">New here? <NavLink to={'/signup'} className="underline">Sign up</NavLink></p>
         
       </form>
     </main>
