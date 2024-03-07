@@ -29,14 +29,14 @@ userRoute.post("/signup", async (req, res) => {
 
   if (existing) {
     return res.status(400).json({
-      message: "User with given username already exists!",
+      error: "User with given username already exists!",
     });
   }
-  const { success } = userObjSchema.safeParse(req.body); // { success: true; data: "tuna" } OR { success: false; error: ZodError }
+  const { success } = userObjSchema.safeParse(req.body); // { success: true; data: "this" } OR { success: false; error: ZodError }
 
   if (!success) {
     return res.status(411).json({
-      message: "Incorrect Inputs!",
+      error: "Incorrect Inputs!",
     });
   }
 
@@ -112,6 +112,7 @@ const updateBody = zod.object({
   password: zod.string().optional(),
   lastName: zod.string().optional(),
 });
+
 userRoute.put("/", authMiddleware, async (req, res) => {
   const userId = req.userId;
   const { success } = updateBody.safeParse(req.body);
@@ -131,7 +132,7 @@ userRoute.put("/", authMiddleware, async (req, res) => {
 
 // Getting users in bulk
 
-userRoute.get("/bulk", async (req, res) => {
+userRoute.get("/bulk", authMiddleware,async (req, res) => {
   const filterParam = req.query.filter || "" // can be either firstname, or lastname
 
   const users = Array.from(await User.find({
@@ -157,4 +158,24 @@ userRoute.get("/bulk", async (req, res) => {
     })
   })
 });
+
+userRoute.get("/userData", authMiddleware, async (req, res) => {
+  const userId = req.userId
+
+  try {
+    const userDetails = await User.findById(userId)
+
+    res.status(200).json({
+      _id: userDetails._id,
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName
+    })
+  }
+  catch (err) {
+    res.status(404).json({
+      error: "User not found with given ID."
+    })
+  }
+
+})
 module.exports = userRoute;
