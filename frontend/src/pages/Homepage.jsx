@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Tornado } from "lucide-react";
-import shopease from "../../public/shopease.jpg";
-import invest from "../../public/invest.jpg";
-import secure from "../../public/secure.jpg";
+import shopease from "../../public/shopease.jpeg";
+import invest from "../../public/invest.jpeg";
+import secure from "../../public/secure.jpeg";
 
 export default function Homepage() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export default function Homepage() {
             </button>
           </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
           <div className="flex justify-center">
             <img
               src={shopease}
@@ -70,7 +70,7 @@ export default function Homepage() {
             <img
               src={secure}
               alt="fully-secure data"
-              className="custom-image"
+              className="custom-image md:col-span-1"
               loading="eager"
             />
           </div>
