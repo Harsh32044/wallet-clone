@@ -12,6 +12,7 @@ export default function Dashboard() {
     balance: "0",
   });
   const [users, setUsers] = useState([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const navigate = useNavigate();
 
@@ -34,22 +35,34 @@ export default function Dashboard() {
 
   async function getCurrentUserData() {
     try {
-      const response = await axios.get("http://localhost:3000/api/v1/users/userData", {
-        headers,
-      });
+      const response = await axios.get(
+        "http://localhost:3000/api/v1/users/userData",
+        {
+          headers,
+        }
+      );
       const balanceResponse = await axios.get(
         "http://localhost:3000/api/v1/accounts/balance",
-        { headers: headers }
+        { headers, }
       );
       setUser({
         ...user,
         firstName: response.data.firstName,
         lastName: response.data.lastName,
-        balance: balanceResponse.data.balance
-      })
+        balance: balanceResponse.data.balance,
+      });
     } catch (err) {
       navigate("/signin");
     }
+  }
+
+  const handleExpanded = () => {
+    setIsExpanded((prev) => !prev);
+  };
+
+  const handleSignout = () => {
+    localStorage.clear()
+    navigate('/signin')
   }
 
   useEffect(() => {
@@ -68,7 +81,7 @@ export default function Dashboard() {
           <div className="text-2xl font-bold">Payments App</div>
           <div className="flex items-center">
             <div className="text-md pr-2">Hello, {user.firstName}</div>
-            <div className="cursor-pointer">
+            <div className="cursor-pointer" onClick={handleExpanded}>
               <NameInitialsAvatar
                 bgColor="whitesmoke"
                 textColor="gray"
@@ -76,6 +89,16 @@ export default function Dashboard() {
                 name={`${user.firstName} ${user.lastName}`}
               />
             </div>
+            {isExpanded && (
+              <div className="side-menu">
+                {/* <button onClick={() => }>
+                  Profile
+                </button> */}
+                <button onClick={() => handleSignout()}>
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </nav>
       </header>
@@ -102,7 +125,7 @@ export default function Dashboard() {
             ))}
           </ul>
         ) : (
-          <h1>Loading...</h1>
+          <div className="font-bold text-center mt-8">Loading...</div>
         )}
       </main>
     </>
