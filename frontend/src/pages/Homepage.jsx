@@ -1,12 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { Tornado } from "lucide-react";
+import shopease from "../../public/shopease.jpg";
+import invest from "../../public/invest.jpg";
+import secure from "../../public/secure.jpg";
 
 export default function Homepage() {
   const navigate = useNavigate();
   return (
-    <>
+    <div className="scroll-smooth">
       <nav className="flex justify-between items-center p-4 shadow-sm">
-        <div className="text-blue-500 flex items-center">
+        <div
+          className="text-blue-500 flex items-center cursor-pointer"
+          onClick={() => navigate("/dashboard")}
+        >
           <div className="text-2xl font-bold">Payzard</div>
           <Tornado />
         </div>
@@ -28,22 +34,48 @@ export default function Homepage() {
         </div>
       </nav>
 
-      <main>
-        <div className="bg-blue-500 text-center h-80 p-4 flex flex-col justify-between">
-          <div className="text-5xl font-extrabold text-gray-50">
+      <div>
+        <div className="bg-blue-500 text-center min-h-80 p-4 flex flex-col justify-between">
+          <div className="text-5xl font-bold text-gray-50 my-4">
             Lightning fast, 100% secure payments. We got you covered.
           </div>
           <div>
             <button
               type="button"
               onClick={() => navigate("/signup")}
-              className="text-gray-950 bg-white  rounded-md px-4 py-2 mr-6 hover:bg-blue-600 hover:text-gray-50"
+              className="text-gray-950 bg-white rounded-md px-2 p-2 hover:bg-blue-600 hover:text-gray-50"
             >
               Sign up for free!
             </button>
           </div>
         </div>
-      </main>
-    </>
+        <div className="grid md:grid-cols-3 gap-4 p-4">
+          <div className="flex justify-center">
+            <img
+              src={shopease}
+              alt="shop with ease"
+              className="custom-image"
+              loading="eager"
+            />
+          </div>
+          <div className="flex justify-center">
+            <img
+              src={invest}
+              alt="savings from tons of offers"
+              className="custom-image"
+              loading="eager"
+            />
+          </div>
+          <div className="flex justify-center">
+            <img
+              src={secure}
+              alt="fully-secure data"
+              className="custom-image"
+              loading="eager"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

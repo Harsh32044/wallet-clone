@@ -42,29 +42,18 @@ export default function Dashboard() {
           headers,
         }
       );
-      setUser({
-        ...user,
-        firstName: response.data.firstName,
-        lastName: response.data.lastName
-      });
-    } catch (err) {
-      navigate("/signin");
-    }
-  }
-
-  const getCurrentUserBalance = async () => {
-    try {
       const balanceResponse = await axios.get(
         "http://localhost:3000/api/v1/accounts/balance",
         { headers, }
       );
       setUser({
         ...user,
-        balance: balanceResponse.data.balance,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName,
+        balance: balanceResponse.data.balance
       });
-    }
-    catch (err) {
-      navigate('/signin')
+    } catch (err) {
+      navigate("/signin");
     }
   }
 
@@ -80,7 +69,6 @@ export default function Dashboard() {
   useEffect(() => {
     getCurrentUserData();
     fetchAvailableUsers();
-    getCurrentUserBalance();
   }, []);
 
   const amountFormatter = new Intl.NumberFormat("en-IN", {
@@ -91,7 +79,7 @@ export default function Dashboard() {
     <>
       <header>
         <nav className="shadow-md flex justify-between items-center p-4">
-          <div className="text-blue-500 flex items-center">
+          <div className="text-blue-500 flex items-center cursor-pointer" onClick={() => navigate('/dashboard')}>
           <div className="text-2xl font-bold">Payzard</div>
           <Tornado />
           </div>
@@ -136,7 +124,7 @@ export default function Dashboard() {
           <ul className="py-6">
             {users.map((elem) => (
               <li key={nanoid()}>
-                <UserItem user={elem} getCurrentUserBalance={getCurrentUserBalance}/>
+                <UserItem user={elem} getCurrentUserBalance={getCurrentUserData}/>
               </li>
             ))}
           </ul>
