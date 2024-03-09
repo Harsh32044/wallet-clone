@@ -22,6 +22,6 @@ body.modal-open #root {
 
 @layer components {
     .custom-image {
-      @apply w-52 md:w-auto max-w-80 object-cover aspect-square px-2 border-2;
+      @apply sm:max-w-52 md:w-auto max-w-80 object-cover aspect-square px-2 border-2;
     }
   }
