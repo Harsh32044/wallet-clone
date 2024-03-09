@@ -10,6 +10,7 @@ export default function Signup() {
         username: '',
         password: ''
     })
+    const [message, setMessage] = useState('')
 
     const [submitSuccess, setSubmitSuccess] = useState(0)
 
@@ -26,13 +27,14 @@ export default function Signup() {
 
     const handleSubmit = async (event) => {
         event.preventDefault()
-
-        const response = axios.post("http://localhost:3000/api/v1/users/signup" , values)
-        if (response.message != '') {
+        try {
+          const response = await axios.post("http://localhost:3000/api/v1/users/signup" , values)
+          setMessage(response.data.message)
           setSubmitSuccess(1)
           navigate("/signin")
         }
-        else {
+        catch (err) {
+          setMessage(err.response.data.error)
           setSubmitSuccess(2)
         }
     }
@@ -43,7 +45,7 @@ export default function Signup() {
         <p className="text-md text-center text-gray-500 py-4">
           Enter your information to create an account.
         </p>
-        {submitSuccess == 2 && <p className="text-red-500 font-semibold">Incorrect Details or user already exists</p>}
+        {submitSuccess == 2 && <p className="text-red-500 font-semibold">{message}</p>}
         <label htmlFor="firstname" className="text-sm font-semibold">
           First Name
         </label>
@@ -102,7 +104,7 @@ export default function Signup() {
         >
           Sign Up
         </button>
-        <p className="text-sm text-center">Already have an account? <NavLink to={'/signin'}>Login</NavLink></p>
+        <p className="text-sm text-center">Already have an account? <NavLink className="underline" to={'/signin'}>Login</NavLink></p>
         
       </form>
     </main>
