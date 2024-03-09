@@ -11,7 +11,7 @@ const userObjSchema = zod.object({
   username: zod.string().email(),
   firstName: zod.string(),
   lastName: zod.string(),
-  password: zod.string(),
+  password: zod.string().min(8),
 });
 
 //Basic get route
@@ -36,33 +36,42 @@ userRoute.post("/signup", async (req, res) => {
 
   if (!success) {
     return res.status(411).json({
-      error: "Incorrect Inputs!",
+      error: "Incorrect Inputs,or password length too small.",
     });
   }
 
-  const newUser = await User.create({
-    username: req.body.username,
-    password: req.body.password,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-  });
-
-  const newAccount = await Account.create({
-    userId: newUser._id,
-    balance: (Math.random() * 1000).toFixed(2) + 1
-  })
-
-  const token = jwt.sign(
-    {
+  try {
+    const newUser = await User.create({
+      username: req.body.username,
+      password: req.body.password,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    });
+  
+    const newAccount = await Account.create({
       userId: newUser._id,
-    },
-    jwtSecret.JWT_SECRET
-  );
-
-  return res.status(201).json({
-    message: "User created successfully",
-    token: token,
-  });
+      balance: (Math.random() * 1000).toFixed(2) + 1
+    })
+  
+    const token = jwt.sign(
+      {
+        userId: newUser._id,
+      },
+      jwtSecret.JWT_SECRET, 
+      {
+        expiresIn: '20m'
+      }
+    );
+  
+    return res.status(201).json({
+      message: "User created successfully",
+      token: token,
+    });
+  }
+  catch (err) {
+    return res.status(500).json({
+      message: 'Something went wrong!'});
+  }
 });
 
 //signin route
@@ -79,7 +88,7 @@ userRoute.post("/signin", async (req, res) => {
 
   if (!success) {
     return res.status(400).json({
-      message: "Username or Password are not in valid format",
+      error: "Username or Password are not in valid format",
     });
   }
 
@@ -97,7 +106,10 @@ userRoute.post("/signin", async (req, res) => {
     {
       userId: user._id,
     },
-    jwtSecret.JWT_SECRET
+    jwtSecret.JWT_SECRET,
+    {
+      expiresIn: '20m'
+    }
   );
 
   return res.status(200).json({
