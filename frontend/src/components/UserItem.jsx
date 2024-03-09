@@ -1,10 +1,13 @@
 import { NameInitialsAvatar } from "react-name-initials-avatar";
 import Modal from "react-modal";
 import { useState } from "react";
+import axios from "axios";
 
 Modal.setAppElement("#root");
-export default function UserItem({ user }) {
+export default function UserItem({ user, getCurrentUserBalance }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [txnAmount, setTxnAmount] = useState(0)
+  const [status, setStatus] = useState("")
 
   const customStyles = {
     content: {
@@ -18,6 +21,31 @@ export default function UserItem({ user }) {
       width: "400px",
     },
   };
+
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  };
+
+  const handleFundTransfer = async () => {
+    const reqBody = {
+      to: user._id,
+      amount: txnAmount
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3000/api/v1/accounts/transfer", reqBody, { headers })
+      console.log(response)
+      setStatus(response.data.message)
+    }
+    catch (err) {
+      setStatus(err.response.data.error)
+    }
+  }
+
+  const handleChange = (event) => {
+    setTxnAmount(event.target.value);
+  }
 
   return (
     <div className="flex justify-between items-center py-4 rounded-md cursor-pointer px-4 hover:bg-gray-200">
@@ -40,7 +68,12 @@ export default function UserItem({ user }) {
       </button>
       <Modal
         isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
+        onRequestClose={() => {
+          setStatus('')
+          setModalOpen(false)
+          setTxnAmount(0)
+          getCurrentUserBalance()
+        }}
         style={customStyles}
         bodyOpenClassName="modal-open"
         className="shadow-md absolute p-6"
@@ -58,10 +91,11 @@ export default function UserItem({ user }) {
               {user.firstName} {user.lastName}
             </div>
           </div>
+          {status.length != 0 && <p className="text-red-500 font-semibold">{status}</p>}
           <label htmlFor="txnAmount">Amount (in Rs.)</label>
-          <input type="text" name="txnAmount" id="txnAmount" 
-          placeholder="Enter Amount" className="p-2 my-4 border-2"/>
-          <button className="bg-blue-500 text-gray-50 rounded-md h-10 hover:bg-blue-400">Initiate Transfer</button>
+          <input type="text" name="txnAmount" id="txnAmount" value={txnAmount}
+          placeholder="Enter Amount" className="p-2 my-4 border-2" onChange={handleChange}/>
+          <button className="bg-blue-500 text-gray-50 rounded-md h-10 hover:bg-blue-400" onClick={handleFundTransfer}>Initiate Transfer</button>
         </div>
       </Modal>
     </div>

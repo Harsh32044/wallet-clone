@@ -50,7 +50,7 @@ accountRoute.post("/transfer", authMiddleware, async (req,res) => {
             )
     
             if (!toAcnt) {
-                throw new Error("Recepient account not found")
+                throw new Error("Recipient account not found")
             }
         })
         

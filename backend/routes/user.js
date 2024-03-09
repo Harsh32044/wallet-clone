@@ -92,36 +92,44 @@ userRoute.post("/signin", async (req, res) => {
     });
   }
 
-  const user = await User.findOne({
-    username: username,
-  });
-
-  if (user.username != username || user.password != password) {
-    return res.status(403).json({
-      message: "Username or Password provided are incorrect",
+  try {
+    const user = await User.findOne({
+      username: username,
+    });
+  
+    if (user.username != username || user.password != password) {
+      return res.status(403).json({
+        message: "Username or Password provided are incorrect",
+      });
+    }
+  
+    const token = jwt.sign(
+      {
+        userId: user._id,
+      },
+      jwtSecret.JWT_SECRET,
+      {
+        expiresIn: '1h'
+      }
+    );
+  
+    return res.status(200).json({
+      token: token,
+      message: `Sign In Successful! Welcome ${user.firstName}`,
     });
   }
 
-  const token = jwt.sign(
-    {
-      userId: user._id,
-    },
-    jwtSecret.JWT_SECRET,
-    {
-      expiresIn: '20m'
-    }
-  );
-
-  return res.status(200).json({
-    token: token,
-    message: `Sign In Successful! Welcome ${user.firstName}`,
-  });
+  catch (err) {
+    return res.status(500).json({
+      error: "Some error occurred. Please try again later"
+    })
+  }
 });
 
 //Update User Info
 const updateBody = zod.object({
   firstName: zod.string().optional(),
-  password: zod.string().optional(),
+  password: zod.string().min(8).optional(),
   lastName: zod.string().optional(),
 });
 
@@ -147,7 +155,7 @@ userRoute.put("/", authMiddleware, async (req, res) => {
 userRoute.get("/bulk", authMiddleware,async (req, res) => {
   const filterParam = req.query.filter || "" // can be either firstname, or lastname
 
-  const users = Array.from(await User.find({
+  let users = Array.from(await User.find({
     $or: [
       {firstName: {
         $regex: filterParam
@@ -159,6 +167,8 @@ userRoute.get("/bulk", authMiddleware,async (req, res) => {
     }
     ]
   }))
+
+  users = users.filter(user => user._id != req.userId)
 
   return res.status(200).json({
     users: users.map(usr => {
