@@ -18,4 +18,10 @@ dd {
 
 body.modal-open #root {
     filter: blur(4px);
-   }
+}
+
+@layer components {
+    .custom-image {
+      @apply max-w-80 object-cover aspect-square px-2 border-2;
+    }
+  }
