@@ -1,9 +1,11 @@
 const express = require("express");
 const zod = require("zod");
-const {User, Account} = require("../db");
+const { User, Account } = require("../db");
 const jwt = require("jsonwebtoken");
 const jwtSecret = require("../config");
 const { authMiddleware } = require("../middleware");
+const bcrypt = require("bcrypt");
+const SALT_WORK_FACTOR = 10;
 
 const userRoute = express.Router();
 
@@ -39,38 +41,38 @@ userRoute.post("/signup", async (req, res) => {
       error: "Incorrect Inputs,or password length too small.",
     });
   }
-
+  const hashed = bcrypt.hashSync(req.body.password, SALT_WORK_FACTOR)
   try {
     const newUser = await User.create({
       username: req.body.username,
-      password: req.body.password,
+      password: hashed,
       firstName: req.body.firstName,
       lastName: req.body.lastName,
     });
-  
-    const newAccount = await Account.create({
+
+    await Account.create({
       userId: newUser._id,
-      balance: (Math.random() * 1000).toFixed(2) + 1
-    })
-  
+      balance: (Math.random() * 1000).toFixed(2) + 1,
+    });
+
     const token = jwt.sign(
       {
         userId: newUser._id,
       },
-      jwtSecret.JWT_SECRET, 
+      jwtSecret.JWT_SECRET,
       {
-        expiresIn: '20m'
+        expiresIn: "20m",
       }
     );
-  
+
     return res.status(201).json({
       message: "User created successfully",
       token: token,
     });
-  }
-  catch (err) {
+  } catch (err) {
     return res.status(500).json({
-      message: 'Something went wrong!'});
+      message: "Something went wrong!",
+    });
   }
 });
 
@@ -96,33 +98,33 @@ userRoute.post("/signin", async (req, res) => {
     const user = await User.findOne({
       username: username,
     });
-  
-    if (user.username != username || user.password != password) {
-      return res.status(403).json({
-        message: "Username or Password provided are incorrect",
-      });
-    }
-  
-    const token = jwt.sign(
-      {
-        userId: user._id,
-      },
-      jwtSecret.JWT_SECRET,
-      {
-        expiresIn: '1h'
-      }
-    );
-  
-    return res.status(200).json({
-      token: token,
-      message: `Sign In Successful! Welcome ${user.firstName}`,
-    });
-  }
 
-  catch (err) {
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (result == true) {
+        const token = jwt.sign(
+          {
+            userId: user._id,
+          },
+          jwtSecret.JWT_SECRET,
+          {
+            expiresIn: "1h",
+          }
+        );
+
+        return res.status(200).json({
+          token: token,
+          message: `Sign In Successful! Welcome ${user.firstName}`,
+        });
+      } else {
+        return res.status(403).json({
+          message: "Username or Password provided are incorrect",
+        });
+      }
+    });
+  } catch (err) {
     return res.status(500).json({
-      error: "Some error occurred. Please try again later"
-    })
+      error: "No user exists with given username.",
+    });
   }
 });
 
@@ -152,52 +154,54 @@ userRoute.put("/", authMiddleware, async (req, res) => {
 
 // Getting users in bulk
 
-userRoute.get("/bulk", authMiddleware,async (req, res) => {
-  const filterParam = req.query.filter || "" // can be either firstname, or lastname
+userRoute.get("/bulk", authMiddleware, async (req, res) => {
+  const filterParam = req.query.filter || ""; // can be either firstname, or lastname
 
-  let users = Array.from(await User.find({
-    $or: [
-      {firstName: {
-        $regex: filterParam
-      }
-    },
-      {lastName: {
-        $regex: filterParam
-      }
-    }
-    ]
-  }))
+  let users = Array.from(
+    await User.find({
+      $or: [
+        {
+          firstName: {
+            $regex: filterParam,
+          },
+        },
+        {
+          lastName: {
+            $regex: filterParam,
+          },
+        },
+      ],
+    })
+  );
 
-  users = users.filter(user => user._id != req.userId)
+  users = users.filter((user) => user._id != req.userId);
 
   return res.status(200).json({
-    users: users.map(usr => {
+    users: users.map((usr) => {
       return {
         _id: usr._id,
         firstName: usr.firstName,
-        lastName: usr.lastName
-      }
-    })
-  })
+        lastName: usr.lastName,
+      };
+    }),
+  });
 });
 
 userRoute.get("/userData", authMiddleware, async (req, res) => {
-  const userId = req.userId
+  const userId = req.userId;
 
   try {
-    const userDetails = await User.findById(userId)
+    const userDetails = await User.findById(userId);
 
     res.status(200).json({
       _id: userDetails._id,
       firstName: userDetails.firstName,
-      lastName: userDetails.lastName
-    })
-  }
-  catch (err) {
+      lastName: userDetails.lastName,
+    });
+  } catch (err) {
     res.status(404).json({
-      error: "User not found with given ID."
-    })
+      error: "User not found with given ID.",
+    });
   }
-
-})
+});
 module.exports = userRoute;
