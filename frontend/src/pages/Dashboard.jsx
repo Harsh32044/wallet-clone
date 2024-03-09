@@ -4,6 +4,7 @@ import UserItem from "../components/UserItem";
 import { nanoid } from "nanoid";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Tornado } from "lucide-react";
 
 export default function Dashboard() {
   const [user, setUser] = useState({
@@ -41,18 +42,29 @@ export default function Dashboard() {
           headers,
         }
       );
+      setUser({
+        ...user,
+        firstName: response.data.firstName,
+        lastName: response.data.lastName
+      });
+    } catch (err) {
+      navigate("/signin");
+    }
+  }
+
+  const getCurrentUserBalance = async () => {
+    try {
       const balanceResponse = await axios.get(
         "http://localhost:3000/api/v1/accounts/balance",
         { headers, }
       );
       setUser({
         ...user,
-        firstName: response.data.firstName,
-        lastName: response.data.lastName,
         balance: balanceResponse.data.balance,
       });
-    } catch (err) {
-      navigate("/signin");
+    }
+    catch (err) {
+      navigate('/signin')
     }
   }
 
@@ -62,12 +74,13 @@ export default function Dashboard() {
 
   const handleSignout = () => {
     localStorage.clear()
-    navigate('/signin')
+    navigate('/')
   }
 
   useEffect(() => {
     getCurrentUserData();
     fetchAvailableUsers();
+    getCurrentUserBalance();
   }, []);
 
   const amountFormatter = new Intl.NumberFormat("en-IN", {
@@ -78,7 +91,10 @@ export default function Dashboard() {
     <>
       <header>
         <nav className="shadow-md flex justify-between items-center p-4">
-          <div className="text-2xl font-bold">Payments App</div>
+          <div className="text-blue-500 flex items-center">
+          <div className="text-2xl font-bold">Payzard</div>
+          <Tornado />
+          </div>
           <div className="flex items-center">
             <div className="text-md pr-2">Hello, {user.firstName}</div>
             <div className="cursor-pointer" onClick={handleExpanded}>
@@ -120,7 +136,7 @@ export default function Dashboard() {
           <ul className="py-6">
             {users.map((elem) => (
               <li key={nanoid()}>
-                <UserItem user={elem} />
+                <UserItem user={elem} getCurrentUserBalance={getCurrentUserBalance}/>
               </li>
             ))}
           </ul>
