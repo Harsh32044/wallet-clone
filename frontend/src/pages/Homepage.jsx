@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Tornado } from "lucide-react";
-import shopease from "../../public/shopease.jpeg";
-import invest from "../../public/invest.jpeg";
-import secure from "../../public/secure.jpeg";
+import shopease from "/shopease.jpeg";
+import invest from "/invest.jpeg";
+import secure from "/secure.jpeg";
 
 export default function Homepage() {
   const navigate = useNavigate();
